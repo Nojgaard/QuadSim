@@ -10,6 +10,11 @@ public class Quadcopter
     #region Specifications
 
     /// <summary>
+    /// Number of rotors
+    /// </summary>
+    public int NumRotors => 4;
+
+    /// <summary>
     /// Arm length in meters
     /// </summary>
     public float ArmLength = 0.29f;
@@ -97,7 +102,7 @@ public class Quadcopter
     {
         Position = position;
         EulerAngles = eulerAngles;
-        Disturb();
+        DisturbAngularVelocity();
     }
 
 
@@ -125,7 +130,6 @@ public class Quadcopter
         Vector3 inverseMomentOfInertia = new(1 / MomentOfInertia.x, 1 / MomentOfInertia.y, 1 / MomentOfInertia.z);
         // Derivative of angular velocity vector
         var wdot = Vector3.Scale(inverseMomentOfInertia, torque - Vector3.Cross(w, Vector3.Scale(MomentOfInertia, w)));
-        Console.WriteLine(wdot);
         return wdot;
     }
 
@@ -144,7 +148,7 @@ public class Quadcopter
     }
 
 
-    private void Disturb()
+    private void DisturbAngularVelocity()
     {
         float distrubance = 1;
 

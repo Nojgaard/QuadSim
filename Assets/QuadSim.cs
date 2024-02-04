@@ -41,50 +41,33 @@ public class QuadSim : MonoBehaviour
 
     public void OnDrawGizmosSelected()
     {
-        // Draw body frame coordinate system 
+        // Draw body frame coordinate system
+        var colors = new Color[] {Color.red, Color.green, Color.blue};
+        // Forward, right, and up directions of body frame
+        var bodyDirs = new Vector3[3];
+        for (int i = 0; i < 3; i++)
+        {
+            var axisDirInInertial = Vector3.zero;
+            axisDirInInertial[i] = 1;
 
-        // draw z axis with arrow (this is the yaw axis)
-        Vector3 up = transform.localToWorldMatrix * (_inertialToUnity * new Vector3(0, 0, 1)); 
-        Gizmos.color = Color.blue;
-        Gizmos.DrawLine(transform.position, (transform.position + (up)));
-        
-        // draw y axis with arrow (this is the pitch axis)
-        Gizmos.color = Color.green;
-        Vector3 right = transform.localToWorldMatrix * (_inertialToUnity * new Vector3(0, 1, 0));        
-        Gizmos.DrawLine(transform.position, (transform.position + right));
-
-        // draw x axis with arrow (this is the roll axis)
-        Gizmos.color = Color.red;
-        Vector3 forward = transform.localToWorldMatrix * (_inertialToUnity * new Vector3(1, 0, 0));
-        Gizmos.DrawLine(transform.position, (transform.position + forward));
-
+            bodyDirs[i] = transform.localToWorldMatrix * _inertialToUnity * axisDirInInertial;
+            Gizmos.color = colors[i];
+            Gizmos.DrawLine(transform.position, transform.position + bodyDirs[i]);
+        }
 
         // Draw motor torque vector
         var scaleRMP = 1 / quadcopter.MaxMotorRPM * 4; // note this has to be adjusted in the long run
-
+        var up = bodyDirs[2];
+        Vector3[] rotorDirs = { bodyDirs[1], bodyDirs[0], -bodyDirs[1], -bodyDirs[0] };
         Gizmos.color = Color.black;
-        Vector3 torque0 = up * Speeds[0] * scaleRMP;
-        var originMotor0 = transform.position + right * quadcopter.ArmLength;
-        Gizmos.DrawLine(originMotor0, originMotor0 + torque0);
-        ConeMesh.DrawCone(originMotor0 + torque0, up, 0.5f * Speeds[0] * scaleRMP);
 
-        Gizmos.color = Color.black;
-        Vector3 torque1 = up * Speeds[1] * scaleRMP;
-        var originMotor1 = transform.position + forward * quadcopter.ArmLength;
-        Gizmos.DrawLine(originMotor1, originMotor1 + torque1);
-        ConeMesh.DrawCone(originMotor1 + torque1, up, 0.5f * Speeds[1] * scaleRMP);
-
-        Gizmos.color = Color.black;
-        Vector3 torque2 = up * Speeds[2] * scaleRMP;
-        var originMotor2 = transform.position - right * quadcopter.ArmLength;
-        Gizmos.DrawLine(originMotor2, originMotor2 + torque2);
-        ConeMesh.DrawCone(originMotor2 + torque2, up, 0.5f * Speeds[2] * scaleRMP);
-
-        Gizmos.color = Color.black;
-        Vector3 torque3 = up * Speeds[3] * scaleRMP;
-        var originMotor3 = transform.position - forward * quadcopter.ArmLength;
-        Gizmos.DrawLine(originMotor3, originMotor3 + torque3);
-        ConeMesh.DrawCone(originMotor3 + torque3, up, 0.5f * Speeds[3] * scaleRMP);
+        for (int i = 0; i < quadcopter.NumRotors; i++)
+        {
+            Vector3 relativeTorque = scaleRMP * Speeds[i] * up;
+            var originRotor = transform.position + rotorDirs[i] * quadcopter.ArmLength;
+            Gizmos.DrawLine(originRotor, originRotor + relativeTorque);
+            ConeMesh.DrawCone(originRotor + relativeTorque, up, 0.5f * Speeds[i] * scaleRMP);
+        }
     }
 
     private Matrix4x4 _inertialToUnity = new(new(1, 0, 0), new(0, 0, 1), new Vector4(0, 1, 0), new(0, 0, 0, 1));
@@ -113,9 +96,8 @@ public class QuadSim : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        quadcopter.SetInitialState(_unityToInertial * transform.localPosition, _unityToInertial * transform.eulerAngles);
-        quadcopter.MotorAngularVelocity[0] = 300;
-        quadcopter.MotorAngularVelocity[3] = 0;
+        quadcopter.Position = _unityToInertial * transform.localPosition;
+        quadcopter.EulerAngles = _unityToInertial * transform.eulerAngles;
     }
 
     // Update is called once per frame
