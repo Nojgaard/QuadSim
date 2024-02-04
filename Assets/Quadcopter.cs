@@ -53,7 +53,7 @@ public class Quadcopter
     public float DragTorqueCoefficient = 1.39e-6f;
 
     /// <summary>
-    /// Force of gravity in inertial frame
+    /// Force of gravity in inertial frame (N)
     /// </summary>
     public Vector3 ForceGravity = new(0, 0, -9.82f);
 
