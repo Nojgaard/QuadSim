@@ -102,6 +102,12 @@ public class Quadcopter
     {
         Position = position;
         EulerAngles = eulerAngles;
+        Velocity = Vector3.zero;
+        AngularVelocity = Vector3.zero;
+        for (int i = 0; i < NumRotors; i++) 
+        {
+            MotorAngularVelocity[i] = 0;
+        }
         DisturbAngularVelocity();
     }
 

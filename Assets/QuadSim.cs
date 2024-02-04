@@ -1,9 +1,5 @@
 using Assets;
-using System.Collections;
-using System.Collections.Generic;
-using TMPro.EditorUtilities;
 using UnityEngine;
-using UnityEngine.XR;
 
 [RequireComponent(typeof(MeshRenderer))]
 public class QuadSim : MonoBehaviour
@@ -11,6 +7,7 @@ public class QuadSim : MonoBehaviour
     public Quadcopter quadcopter = new();
 
     public float[] Speeds = new float[4];
+
 
     public void OnEnable()
     {
@@ -77,6 +74,11 @@ public class QuadSim : MonoBehaviour
     void OnGUI()
     {
         Event e = Event.current;
+        if (Input.GetKeyUp(KeyCode.R))
+        {
+            quadcopter.SetInitialState(new Vector3(0, 0, 10), Vector3.zero);
+        }
+
         if (e.isKey && e.keyCode == KeyCode.UpArrow)
         {
             for (int i = 0; i < Speeds.Length; i++)
@@ -103,9 +105,15 @@ public class QuadSim : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (float.IsNaN(quadcopter.EulerAngles.x))
+            return;
+
         quadcopter.MotorAngularVelocity = Speeds;
         var dt = Time.deltaTime;
         quadcopter.Update(dt*.7f);
+
+        if (float.IsNaN(quadcopter.EulerAngles.x))
+            return;
 
         transform.localPosition = _inertialToUnity * quadcopter.Position;
         transform.eulerAngles = _inertialToUnity * (Mathf.Rad2Deg * quadcopter.EulerAngles);
