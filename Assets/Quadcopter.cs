@@ -7,6 +7,8 @@ using UnityEngine;
 
 public class Quadcopter
 {
+    #region Specifications
+
     /// <summary>
     /// Arm length in meters
     /// </summary>
@@ -23,19 +25,9 @@ public class Quadcopter
     public float MaxMotorRPM = 1000; 
 
     /// <summary>
-    /// Angular velocity for each motor (radian/seconds)
-    /// </summary>
-    public float[] MotorAngularVelocity = new float[4];
-
-    /// <summary>
     /// Thrust coeffecient (kg-m)
     /// </summary>
     public float ThrustCoefficient = 2.39e-5f;
-
-    /// <summary>
-    /// Thrust from motors in body frame (N)
-    /// </summary>
-    public Vector3 ForceThrust => new (0, 0, ThrustCoefficient * MotorAngularVelocity.Sum(x => x * x));
 
     /// <summary>
     /// Moment of inertia on each axis in body frame (kg-m^2)
@@ -52,47 +44,66 @@ public class Quadcopter
     /// </summary>
     public float DragTorqueCoefficient = 1.39e-6f;
 
+    #endregion
+
+    #region Forces
+
+    /// <summary>
+    /// Thrust from motors in body frame (N)
+    /// </summary>
+    public Vector3 ForceThrust => new(0, 0, ThrustCoefficient * MotorAngularVelocity.Sum(x => x * x));
+
     /// <summary>
     /// Force of gravity in inertial frame (N)
     /// </summary>
     public Vector3 ForceGravity = new(0, 0, -9.82f);
 
-    public Vector3 ForceDrag => Vector3.Scale(-DragCoefficients, _velocity);
-     
+    /// <summary>
+    /// Force of drag in body frame (N)
+    /// </summary>
+    public Vector3 ForceDrag => Vector3.Scale(-DragCoefficients, Velocity);
+
+    #endregion
+
+    #region State
+    /// <summary>
+    /// Angular velocity for each motor (radian/seconds)
+    /// </summary>
+    public float[] MotorAngularVelocity = new float[4];
+
     /// <summary>
     /// Position in intertial frame
     /// </summary>
-    private Vector3 _position = new();
+    public Vector3 Position = new();
 
     /// <summary>
     /// Roll, pitch, yaw in body frame
     /// </summary>
-    public Vector3 _eulerAngles = new();
+    public Vector3 EulerAngles = new();
 
     /// <summary>
     /// Velocity of quadcopter in bodyframe (m/s)
     /// </summary>
-    public Vector3 _velocity = new();
+    public Vector3 Velocity = new();
 
     /// <summary>
     /// Angular velocity of quadcopter in 
     /// </summary>
-    public Vector3 _angularVelocity = new();
+    public Vector3 AngularVelocity = new();
 
-    public Vector3 Position => _position;
-    public Vector3 EulerAngles => _eulerAngles;
+    #endregion
 
     public void SetInitialState(Vector3 position, Vector3 eulerAngles)
     {
-        _position = position;
-        _eulerAngles = eulerAngles;
+        Position = position;
+        EulerAngles = eulerAngles;
         Disturb();
     }
 
 
     private Vector3 Acceleration()
     {
-        var bodyToInertialRotation = Quaternion.Euler(Mathf.Rad2Deg * _eulerAngles);
+        var bodyToInertialRotation = Quaternion.Euler(Mathf.Rad2Deg * EulerAngles);
         var thrustInInertialFrame = bodyToInertialRotation * ForceThrust;
         return ForceGravity + ForceDrag + thrustInInertialFrame / Mass;
     }
@@ -109,7 +120,7 @@ public class Quadcopter
             ArmLength * ThrustCoefficient * (m[1] - m[3]),
             DragTorqueCoefficient * (m[0] - m[1] + m[2] - m[3])
             );
-        var w = AngularVelocity.ToAngularVelocityVector(_eulerAngles, _angularVelocity);
+        var w = Assets.AngularVelocity.ToAngularVelocityVector(EulerAngles, AngularVelocity);
 
         Vector3 inverseMomentOfInertia = new(1 / MomentOfInertia.x, 1 / MomentOfInertia.y, 1 / MomentOfInertia.z);
         // Derivative of angular velocity vector
@@ -123,13 +134,13 @@ public class Quadcopter
         var acceleration = Acceleration();
         var angularAcceleration = AngularAcceleration();
 
-        var angularVelocityVector = AngularVelocity.ToAngularVelocityVector(_eulerAngles, _angularVelocity);
+        var angularVelocityVector = Assets.AngularVelocity.ToAngularVelocityVector(EulerAngles, AngularVelocity);
         angularVelocityVector += dt * angularAcceleration;
-        _angularVelocity = AngularVelocity.FromAngularVelocityVector(_eulerAngles, angularVelocityVector);
-        _eulerAngles += dt * _angularVelocity;
+        AngularVelocity = Assets.AngularVelocity.FromAngularVelocityVector(EulerAngles, angularVelocityVector);
+        EulerAngles += dt * AngularVelocity;
 
-        _velocity += dt * acceleration;
-        _position += dt * _velocity;
+        Velocity += dt * acceleration;
+        Position += dt * Velocity;
     }
 
 
@@ -141,6 +152,6 @@ public class Quadcopter
         velocityDisturbance *= distrubance;
         velocityDisturbance -= Vector3.one * distrubance;
 
-        _angularVelocity += velocityDisturbance;
+        AngularVelocity += velocityDisturbance;
     }
 }

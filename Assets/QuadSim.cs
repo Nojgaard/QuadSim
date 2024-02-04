@@ -1,3 +1,4 @@
+using Assets;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro.EditorUtilities;
@@ -7,7 +8,7 @@ using UnityEngine.XR;
 [RequireComponent(typeof(MeshRenderer))]
 public class QuadSim : MonoBehaviour
 {
-    private Quadcopter quadcopter = new Quadcopter();
+    public Quadcopter quadcopter = new();
 
     public float[] Speeds = new float[4];
 
@@ -37,50 +38,6 @@ public class QuadSim : MonoBehaviour
         motors[3].transform.localPosition = (Vector3.back * quadcopter.ArmLength);
 
     }
-    private static class Cone
-    {
-        private static Vector3[] newVertices = new Vector3[]
-    {
-            new Vector3(-0.0f, 1.0f, 0.0f),
-            new Vector3(0.2f, 0.0f, 0.4f),
-            new Vector3(0.5f, 0.0f, 0.0f),
-            new Vector3(0.0f, 0.0f, 0.0f),
-            new Vector3(-0.3f, 0.0f, 0.4f),
-            new Vector3(-0.5f, 0.0f, 0.0f),
-            new Vector3(-0.2f, 0.0f, -0.4f),
-            new Vector3(0.2f, 0.0f, -0.4f),
-    };
-        private static Vector3[] newNormals = new Vector3[]
-        {
-            new Vector3(0,1,0),
-            new Vector3(1,0,1),
-            new Vector3(1,0,0),
-            new Vector3(0,-1,0),
-            new Vector3(-1,0,1),
-            new Vector3(-1,0,0),
-            new Vector3(-1,0,-1),
-            new Vector3(1,0,-1),
-        };
-        private static int[] newTriangles = new int[]
-        {
-            0, 1, 2, 2, 1, 3, 0, 4, 1, 1, 4, 3, 0, 5, 4, 4, 5, 3, 0, 6, 5, 5, 6, 3, 0, 7, 6, 6, 7, 3, 0, 2, 7, 7, 2, 3
-        };
-
-        private static Mesh mesh;
-
-        static Cone()
-        {
-            mesh = new Mesh();
-            mesh.vertices = newVertices;
-            mesh.triangles = newTriangles;
-            mesh.normals = newNormals;
-        }
-
-        public static void DrawCone(Vector3 position, Vector3 rotation, float scale)
-        {
-            Gizmos.DrawMesh(mesh, position, Quaternion.FromToRotation(Vector3.up, rotation), new Vector3(scale, 2 * scale, scale));
-        }
-    }
 
     public void OnDrawGizmosSelected()
     {
@@ -109,25 +66,25 @@ public class QuadSim : MonoBehaviour
         Vector3 torque0 = up * Speeds[0] * scaleRMP;
         var originMotor0 = transform.position + right * quadcopter.ArmLength;
         Gizmos.DrawLine(originMotor0, originMotor0 + torque0);
-        Cone.DrawCone(originMotor0 + torque0, up, 0.5f * Speeds[0] * scaleRMP);
+        ConeMesh.DrawCone(originMotor0 + torque0, up, 0.5f * Speeds[0] * scaleRMP);
 
         Gizmos.color = Color.black;
         Vector3 torque1 = up * Speeds[1] * scaleRMP;
         var originMotor1 = transform.position + forward * quadcopter.ArmLength;
         Gizmos.DrawLine(originMotor1, originMotor1 + torque1);
-        Cone.DrawCone(originMotor1 + torque1, up, 0.5f * Speeds[1] * scaleRMP);
+        ConeMesh.DrawCone(originMotor1 + torque1, up, 0.5f * Speeds[1] * scaleRMP);
 
         Gizmos.color = Color.black;
         Vector3 torque2 = up * Speeds[2] * scaleRMP;
         var originMotor2 = transform.position - right * quadcopter.ArmLength;
         Gizmos.DrawLine(originMotor2, originMotor2 + torque2);
-        Cone.DrawCone(originMotor2 + torque2, up, 0.5f * Speeds[2] * scaleRMP);
+        ConeMesh.DrawCone(originMotor2 + torque2, up, 0.5f * Speeds[2] * scaleRMP);
 
         Gizmos.color = Color.black;
         Vector3 torque3 = up * Speeds[3] * scaleRMP;
         var originMotor3 = transform.position - forward * quadcopter.ArmLength;
         Gizmos.DrawLine(originMotor3, originMotor3 + torque3);
-        Cone.DrawCone(originMotor3 + torque3, up, 0.5f * Speeds[3] * scaleRMP);
+        ConeMesh.DrawCone(originMotor3 + torque3, up, 0.5f * Speeds[3] * scaleRMP);
     }
 
     private Matrix4x4 _inertialToUnity = new(new(1, 0, 0), new(0, 0, 1), new Vector4(0, 1, 0), new(0, 0, 0, 1));
