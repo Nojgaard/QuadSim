@@ -95,11 +95,16 @@ public class QuadSim : MonoBehaviour
         }
     }
 
+    private PDController _controller;
+
     // Start is called before the first frame update
     void Start()
     {
         quadcopter.Position = _unityToInertial * transform.localPosition;
         quadcopter.EulerAngles = _unityToInertial * transform.eulerAngles;
+        quadcopter.SetInitialState(new Vector3(0, 0, 10), Vector3.zero);
+
+        _controller = new PDController(quadcopter, new Gyro(0f, quadcopter));
     }
 
     // Update is called once per frame
@@ -108,8 +113,10 @@ public class QuadSim : MonoBehaviour
         if (float.IsNaN(quadcopter.EulerAngles.x))
             return;
 
-        quadcopter.MotorAngularVelocity = Speeds;
         var dt = Time.deltaTime;
+        quadcopter.MotorAngularVelocity = Speeds;
+        _controller.Update(dt * .7f);
+        Speeds = quadcopter.MotorAngularVelocity;
         quadcopter.Update(dt*.7f);
 
         if (float.IsNaN(quadcopter.EulerAngles.x))
