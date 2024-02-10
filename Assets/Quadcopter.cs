@@ -114,8 +114,8 @@ public class Quadcopter
         MotorAngularVelocity[1] = 410;
         MotorAngularVelocity[2] = 250;
         MotorAngularVelocity[3] = 410;*/
-        AngularVelocity.z = 5;
-        //DisturbAngularVelocity();
+        //AngularVelocity.z = 5;
+        DisturbAngularVelocity();
     }
 
 
