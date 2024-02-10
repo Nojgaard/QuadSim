@@ -9,6 +9,8 @@ public class QuadSim : MonoBehaviour
     [Range(0, 1)]
     public float timeScale = .7f;
 
+    public bool EnableController = true;
+
 
     public void OnEnable()
     {
@@ -115,7 +117,10 @@ public class QuadSim : MonoBehaviour
             return;
 
         var dt = Time.deltaTime * timeScale;
-        //_controller.Update(dt);
+        if (EnableController)
+        {
+            _controller.Update(dt);
+        }
         quadcopter.Update(dt);
 
         if (float.IsNaN(quadcopter.EulerAngles.x))
