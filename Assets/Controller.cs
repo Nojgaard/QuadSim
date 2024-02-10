@@ -112,13 +112,20 @@ public class PDController
 
 
         var gammas = new Vector4(
-            inputs.x / (4 * k) - inputs.z / (2 * L * k) + inputs.w / (4 * b),
-            inputs.x / (4 * k) + inputs.y / (2 * L * k) - inputs.w / (4 * b),
-            inputs.x / (4 * k) + inputs.z / (2 * L * k) + inputs.w / (4 * b),
-            inputs.x / (4 * k) - inputs.y / (2 * L * k) - inputs.w / (4 * b)
+            inputs.x / (4 * k) - inputs.z / (2 * L * k) - inputs.w / (4 * b),
+            inputs.x / (4 * k) + inputs.y / (2 * L * k) + inputs.w / (4 * b),
+            inputs.x / (4 * k) + inputs.z / (2 * L * k) - inputs.w / (4 * b),
+            inputs.x / (4 * k) - inputs.y / (2 * L * k) + inputs.w / (4 * b)
             );
 
-        
+		// The clamps are required, because of the thrust from the yaw control (u4)
+		// might be greater than the thrust required to hover (u1), resulting in
+		// negative motor speeds. This has to be possible to adjust for,
+		// but not sure how...
+        gammas.x = Mathf.Clamp(gammas.x, 0, _quadcopter.Specification.MaxMotorRPM * _quadcopter.Specification.MaxMotorRPM);
+        gammas.y = Mathf.Clamp(gammas.y, 0, _quadcopter.Specification.MaxMotorRPM * _quadcopter.Specification.MaxMotorRPM);
+        gammas.z = Mathf.Clamp(gammas.z, 0, _quadcopter.Specification.MaxMotorRPM * _quadcopter.Specification.MaxMotorRPM);
+        gammas.w = Mathf.Clamp(gammas.w, 0, _quadcopter.Specification.MaxMotorRPM * _quadcopter.Specification.MaxMotorRPM);
         return gammas;
     }
 

@@ -108,9 +108,13 @@ public class Quadcopter
         AngularVelocity = Vector3.zero;
         for (int i = 0; i < Specification.NumRotors; i++) 
         {
-            MotorAngularVelocity[i] = 0;
+            MotorAngularVelocity[i] = 330;
         }
-        AngularVelocity.y = 5;
+        /*MotorAngularVelocity[0] = 250;
+        MotorAngularVelocity[1] = 410;
+        MotorAngularVelocity[2] = 250;
+        MotorAngularVelocity[3] = 410;*/
+        AngularVelocity.z = 5;
         //DisturbAngularVelocity();
     }
 
