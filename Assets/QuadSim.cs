@@ -6,6 +6,8 @@ public class QuadSim : MonoBehaviour
 {
     public Quadcopter quadcopter = new();
 
+    public PDController controller;
+
     [Range(0, 1)]
     public float timeScale = .7f;
 
@@ -98,8 +100,6 @@ public class QuadSim : MonoBehaviour
         }
     }
 
-    private PDController _controller;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -107,7 +107,7 @@ public class QuadSim : MonoBehaviour
         quadcopter.EulerAngles = _unityToInertial * transform.eulerAngles;
         quadcopter.SetInitialState(new Vector3(0, 0, 10), Vector3.zero);
 
-        _controller = new PDController(quadcopter, new Gyro(0f, quadcopter));
+        controller = new PDController(quadcopter, new Gyro(0f, quadcopter));
     }
 
     // Update is called once per frame
@@ -119,7 +119,7 @@ public class QuadSim : MonoBehaviour
         var dt = Time.deltaTime * timeScale;
         if (EnableController)
         {
-            _controller.Update(dt);
+            controller.Update(dt);
         }
         quadcopter.Update(dt);
 

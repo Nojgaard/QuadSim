@@ -2,13 +2,14 @@
 using System;
 using UnityEngine;
 
+[Serializable]
 public class PDController
 {
 	private readonly Quadcopter _quadcopter;
 	private readonly Gyro _gyro;
     private Vector3 _eulerAngleIntegrated;
     
-	public float DerivativeScale = .1f;
+	public float DerivativeScale = .8f;
 	public float ProportionalScale = 1f;
 
 	private struct ControlInput
