@@ -114,9 +114,9 @@ public class QuadSim : MonoBehaviour
         if (float.IsNaN(quadcopter.EulerAngles.x))
             return;
 
-        var dt = Time.deltaTime;
-        //_controller.Update(dt * timeScale);
-        quadcopter.Update(dt * timeScale);
+        var dt = Time.deltaTime * timeScale;
+        //_controller.Update(dt);
+        quadcopter.Update(dt);
 
         if (float.IsNaN(quadcopter.EulerAngles.x))
             return;
