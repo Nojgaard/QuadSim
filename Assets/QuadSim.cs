@@ -29,10 +29,10 @@ public class QuadSim : MonoBehaviour
             motors[i].transform.localScale = motorSize;
         }
 
-        motors[0].transform.localPosition = (Vector3.right * quadcopter.ArmLength);
-        motors[1].transform.localPosition = (Vector3.left * quadcopter.ArmLength);
-        motors[2].transform.localPosition = (Vector3.forward * quadcopter.ArmLength);
-        motors[3].transform.localPosition = (Vector3.back * quadcopter.ArmLength);
+        motors[0].transform.localPosition = (Vector3.right * quadcopter.Specification.ArmLength);
+        motors[1].transform.localPosition = (Vector3.left * quadcopter.Specification.ArmLength);
+        motors[2].transform.localPosition = (Vector3.forward * quadcopter.Specification.ArmLength);
+        motors[3].transform.localPosition = (Vector3.back * quadcopter.Specification.ArmLength);
 
     }
 
@@ -53,15 +53,15 @@ public class QuadSim : MonoBehaviour
         }
 
         // Draw motor torque vector
-        var scaleRMP = 1 / quadcopter.MaxMotorRPM * 4; // note this has to be adjusted in the long run
+        var scaleRMP = 1 / quadcopter.Specification.MaxMotorRPM * 4; // note this has to be adjusted in the long run
         var up = bodyDirs[2];
         Vector3[] rotorDirs = { bodyDirs[1], bodyDirs[0], -bodyDirs[1], -bodyDirs[0] };
         Gizmos.color = Color.black;
 
-        for (int i = 0; i < quadcopter.NumRotors; i++)
+        for (int i = 0; i < quadcopter.Specification.NumRotors; i++)
         {
             Vector3 relativeTorque = scaleRMP * Speeds[i] * up;
-            var originRotor = transform.position + rotorDirs[i] * quadcopter.ArmLength;
+            var originRotor = transform.position + rotorDirs[i] * quadcopter.Specification.ArmLength;
             Gizmos.DrawLine(originRotor, originRotor + relativeTorque);
             ConeMesh.DrawCone(originRotor + relativeTorque, up, 0.5f * Speeds[i] * scaleRMP);
         }

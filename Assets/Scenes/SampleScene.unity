@@ -541,11 +541,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fac52a0b0f89d044c8250c8a3ab0156e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Speeds:
-  - 0
-  - 0
-  - 0
-  - 0
+  quadcopter:
+    Specification:
+      ArmLength: 0.29
+      Mass: 1
+      MaxMotorRPM: 1000
+      ThrustCoefficient: 0.0000239
+      MomentOfInertia: {x: 0.04989, y: 0.04989, z: 0.24057}
+      DragCoefficients: {x: 0.164, y: 0.319, z: 0}
+      DragTorqueCoefficient: 0.00000139
+    MotorAngularVelocity: {x: 0, y: 0, z: 0, w: 0}
+    Position: {x: 0, y: 0, z: 0}
+    EulerAngles: {x: 0, y: 0, z: 0}
+    Velocity: {x: 0, y: 0, z: 0}
+    AngularVelocity: {x: 0, y: 0, z: 0}
+  timeScale: 0.396
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -1,76 +1,78 @@
-using Assets;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[Serializable]
 public class Quadcopter
 {
-    #region Specifications
+    [Serializable]
+    public class SpecificationData
+    {
+        /// <summary>
+        /// Number of rotors
+        /// </summary>
+        public int NumRotors => 4;
 
-    /// <summary>
-    /// Number of rotors
-    /// </summary>
-    public int NumRotors => 4;
+        /// <summary>
+        /// Arm length in meters
+        /// </summary>
+        public float ArmLength = 0.29f;
 
-    /// <summary>
-    /// Arm length in meters
-    /// </summary>
-    public float ArmLength = 0.29f;
+        /// <summary>
+        /// Mass of quadcopter (kg)
+        /// </summary>
+        public float Mass = 1f;
 
-    /// <summary>
-    /// Mass of quadcopter (kg)
-    /// </summary>
-    public float Mass = 1f;
+        /// <summary>
+        /// Maximum rpm of the 4 motors
+        /// </summary>
+        public float MaxMotorRPM = 1000;
 
-    /// <summary>
-    /// Maximum rpm of the 4 motors
-    /// </summary>
-    public float MaxMotorRPM = 1000; 
+        /// <summary>
+        /// Thrust coeffecient (kg-m)
+        /// </summary>
+        public float ThrustCoefficient = 2.39e-5f;
 
-    /// <summary>
-    /// Thrust coeffecient (kg-m)
-    /// </summary>
-    public float ThrustCoefficient = 2.39e-5f;
+        /// <summary>
+        /// Moment of inertia on each axis in body frame (kg-m^2)
+        /// </summary>
+        public Vector3 MomentOfInertia = new(0.04989f, 0.04989f, 0.24057f);
 
-    /// <summary>
-    /// Moment of inertia on each axis in body frame (kg-m^2)
-    /// </summary>
-    public Vector3 MomentOfInertia = new(0.04989f, 0.04989f, 0.24057f);
+        /// <summary>
+        /// Drag coefficients on each axis (kg/s)
+        /// </summary>
+        public Vector3 DragCoefficients = new(0.164f, 0.319f, 0f);
 
-    /// <summary>
-    /// Drag coefficients on each axis (kg/s)
-    /// </summary>
-    public Vector3 DragCoefficients = new(0.164f, 0.319f, 0f);
+        /// <summary>
+        /// Drag torque coefficients (kg-m^2/s^2)
+        /// </summary>
+        public float DragTorqueCoefficient = 1.39e-6f;
+    }
 
-    /// <summary>
-    /// Drag torque coefficients (kg-m^2/s^2)
-    /// </summary>
-    public float DragTorqueCoefficient = 1.39e-6f;
-
-    #endregion
+    public SpecificationData Specification;
 
     #region Forces
 
     /// <summary>
     /// Thrust from motors in body frame (N)
     /// </summary>
-    public Vector3 ForceThrust => new(0, 0, ThrustCoefficient * MotorAngularVelocity.Sum(x => x * x));
+    public Vector3 ForceThrust => new(0, 0, Specification.ThrustCoefficient * MotorAngularVelocity.Sum(x => x * x));
 
     /// <summary>
     /// Force of gravity in inertial frame (N)
     /// </summary>
-    public Vector3 ForceGravity = new(0, 0, -9.82f);
+    public Vector3 ForceGravity => new(0, 0, -9.82f);
 
     /// <summary>
     /// Force of drag in body frame (N)
     /// </summary>
-    public Vector3 ForceDrag => Vector3.Scale(-DragCoefficients, Velocity);
+    public Vector3 ForceDrag => Vector3.Scale(-Specification.DragCoefficients, Velocity);
 
     #endregion
 
     #region State
+
+    [Header("State")]
     /// <summary>
     /// Angular velocity for each motor (radian/seconds)
     /// </summary>
@@ -104,11 +106,12 @@ public class Quadcopter
         EulerAngles = eulerAngles;
         Velocity = Vector3.zero;
         AngularVelocity = Vector3.zero;
-        for (int i = 0; i < NumRotors; i++) 
+        for (int i = 0; i < Specification.NumRotors; i++) 
         {
             MotorAngularVelocity[i] = 0;
         }
-        DisturbAngularVelocity();
+        AngularVelocity.x = 5;
+        //DisturbAngularVelocity();
     }
 
 
@@ -116,7 +119,7 @@ public class Quadcopter
     {
         var bodyToInertialRotation = Quaternion.Euler(Mathf.Rad2Deg * EulerAngles);
         var thrustInInertialFrame = bodyToInertialRotation * ForceThrust;
-        return ForceGravity + ForceDrag + thrustInInertialFrame / Mass;
+        return ForceGravity + ForceDrag + thrustInInertialFrame / Specification.Mass;
     }
 
     /// <summary>
@@ -127,15 +130,15 @@ public class Quadcopter
     {
         var m = MotorAngularVelocity.Select(x => x * x).ToArray();
         Vector3 torque = new(
-            ArmLength * ThrustCoefficient * (m[2] - m[0]),
-            ArmLength * ThrustCoefficient * (m[1] - m[3]),
-            DragTorqueCoefficient * (m[0] - m[1] + m[2] - m[3])
+            Specification.ArmLength * Specification.ThrustCoefficient * (m[2] - m[0]),
+            Specification.ArmLength * Specification.ThrustCoefficient * (m[1] - m[3]),
+            Specification.DragTorqueCoefficient * (m[0] - m[1] + m[2] - m[3])
             );
         var w = Assets.AngularVelocity.ToAngularVelocityVector(EulerAngles, AngularVelocity);
 
-        Vector3 inverseMomentOfInertia = new(1 / MomentOfInertia.x, 1 / MomentOfInertia.y, 1 / MomentOfInertia.z);
+        Vector3 inverseMomentOfInertia = new(1 / Specification.MomentOfInertia.x, 1 / Specification.MomentOfInertia.y, 1 / Specification.MomentOfInertia.z);
         // Derivative of angular velocity vector
-        var wdot = Vector3.Scale(inverseMomentOfInertia, torque - Vector3.Cross(w, Vector3.Scale(MomentOfInertia, w)));
+        var wdot = Vector3.Scale(inverseMomentOfInertia, torque - Vector3.Cross(w, Vector3.Scale(Specification.MomentOfInertia, w)));
         return wdot;
     }
 

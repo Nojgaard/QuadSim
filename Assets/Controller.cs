@@ -37,12 +37,12 @@ public class PDController
 
 	private Vector4 AdjustInput(Vector3 angularVelocities)
 	{
-        var I = _quadcopter.MomentOfInertia;
-		var m = _quadcopter.Mass;
-		var b = _quadcopter.DragTorqueCoefficient;
-		var k = _quadcopter.ThrustCoefficient;
-		var g = _quadcopter.ForceGravity;
-		var L = _quadcopter.ArmLength;
+        var I = _quadcopter.Specification.MomentOfInertia;
+		var m = _quadcopter.Specification.Mass;
+		var b = _quadcopter.Specification.DragTorqueCoefficient;
+		var k = _quadcopter.Specification.ThrustCoefficient;
+		var g = -_quadcopter.ForceGravity.z;
+		var L = _quadcopter.Specification.ArmLength;
 
 		var errors = ComputerErrors(angularVelocities);
 
@@ -62,7 +62,11 @@ public class PDController
 			thrustConstraint + const1 + const2
 			);
 
-		return gammas;
+		gammas.x = Mathf.Clamp(gammas.x, 0, _quadcopter.Specification.MaxMotorRPM * _quadcopter.Specification.MaxMotorRPM);
+        gammas.y = Mathf.Clamp(gammas.y, 0, _quadcopter.Specification.MaxMotorRPM * _quadcopter.Specification.MaxMotorRPM);
+        gammas.z = Mathf.Clamp(gammas.z, 0, _quadcopter.Specification.MaxMotorRPM * _quadcopter.Specification.MaxMotorRPM);
+        gammas.w = Mathf.Clamp(gammas.w, 0, _quadcopter.Specification.MaxMotorRPM * _quadcopter.Specification.MaxMotorRPM);
+        return gammas;
     }
 
 	public void Update(float dt)
