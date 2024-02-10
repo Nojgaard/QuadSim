@@ -6,7 +6,8 @@ public class QuadSim : MonoBehaviour
 {
     public Quadcopter quadcopter = new();
 
-    public float[] Speeds = new float[4];
+    [Range(0, 1)]
+    public float timeScale = .7f;
 
 
     public void OnEnable()
@@ -60,10 +61,10 @@ public class QuadSim : MonoBehaviour
 
         for (int i = 0; i < quadcopter.Specification.NumRotors; i++)
         {
-            Vector3 relativeTorque = scaleRMP * Speeds[i] * up;
+            Vector3 relativeTorque = scaleRMP * quadcopter.MotorAngularVelocity[i] * up;
             var originRotor = transform.position + rotorDirs[i] * quadcopter.Specification.ArmLength;
             Gizmos.DrawLine(originRotor, originRotor + relativeTorque);
-            ConeMesh.DrawCone(originRotor + relativeTorque, up, 0.5f * Speeds[i] * scaleRMP);
+            ConeMesh.DrawCone(originRotor + relativeTorque, up, 0.5f * quadcopter.MotorAngularVelocity[i] * scaleRMP);
         }
     }
 
@@ -81,16 +82,16 @@ public class QuadSim : MonoBehaviour
 
         if (e.isKey && e.keyCode == KeyCode.UpArrow)
         {
-            for (int i = 0; i < Speeds.Length; i++)
+            for (int i = 0; i < 4; i++)
             {
-                Speeds[i] += 100;
+                quadcopter.MotorAngularVelocity[i] += 100;
             }
         }
         if (e.isKey && e.keyCode == KeyCode.DownArrow)
         {
-            for (int i = 0; i < Speeds.Length; i++)
+            for (int i = 0; i < 4; i++)
             {
-                Speeds[i] -= 100;
+                quadcopter.MotorAngularVelocity[i] -= 100;
             }
         }
     }
@@ -114,10 +115,8 @@ public class QuadSim : MonoBehaviour
             return;
 
         var dt = Time.deltaTime;
-        quadcopter.MotorAngularVelocity = Speeds;
-        _controller.Update(dt * .7f);
-        Speeds = quadcopter.MotorAngularVelocity;
-        quadcopter.Update(dt*.7f);
+        //_controller.Update(dt * timeScale);
+        quadcopter.Update(dt * timeScale);
 
         if (float.IsNaN(quadcopter.EulerAngles.x))
             return;

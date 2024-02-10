@@ -56,7 +56,7 @@ public class Quadcopter
     /// <summary>
     /// Thrust from motors in body frame (N)
     /// </summary>
-    public Vector3 ForceThrust => new(0, 0, Specification.ThrustCoefficient * MotorAngularVelocity.Sum(x => x * x));
+    public Vector3 ForceThrust => new(0, 0, Specification.ThrustCoefficient * MotorAngularVelocity.sqrMagnitude);
 
     /// <summary>
     /// Force of gravity in inertial frame (N)
@@ -76,7 +76,7 @@ public class Quadcopter
     /// <summary>
     /// Angular velocity for each motor (radian/seconds)
     /// </summary>
-    public float[] MotorAngularVelocity = new float[4];
+    public Vector4 MotorAngularVelocity = new();
 
     /// <summary>
     /// Position in intertial frame
@@ -128,7 +128,7 @@ public class Quadcopter
     /// <returns></returns>
     private Vector3 AngularAcceleration()
     {
-        var m = MotorAngularVelocity.Select(x => x * x).ToArray();
+        var m = Vector4.Scale(MotorAngularVelocity, MotorAngularVelocity);
         Vector3 torque = new(
             Specification.ArmLength * Specification.ThrustCoefficient * (m[2] - m[0]),
             Specification.ArmLength * Specification.ThrustCoefficient * (m[1] - m[3]),

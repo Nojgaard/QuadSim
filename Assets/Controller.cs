@@ -76,10 +76,10 @@ public class PDController
         var gammas = AdjustInput(angularVelocities);
         IntegrateEulerAngle(angularVelocities, dt);
 
-		_quadcopter.MotorAngularVelocity = new float[4] { 
+		_quadcopter.MotorAngularVelocity = new Vector4 ( 
 			Mathf.Sqrt(gammas[0]), 
 			Mathf.Sqrt(gammas[1]), 
 			Mathf.Sqrt(gammas[2]), 
-			Mathf.Sqrt(gammas[3]) };
+			Mathf.Sqrt(gammas[3]) );
     }
 }
