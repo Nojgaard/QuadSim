@@ -110,7 +110,7 @@ public class Quadcopter
         {
             MotorAngularVelocity[i] = 0;
         }
-        AngularVelocity.x = 5;
+        AngularVelocity.y = 5;
         //DisturbAngularVelocity();
     }
 
@@ -130,8 +130,8 @@ public class Quadcopter
     {
         var m = Vector4.Scale(MotorAngularVelocity, MotorAngularVelocity);
         Vector3 torque = new(
-            Specification.ArmLength * Specification.ThrustCoefficient * (m[2] - m[0]),
-            Specification.ArmLength * Specification.ThrustCoefficient * (m[1] - m[3]),
+            Specification.ArmLength * Specification.ThrustCoefficient * (m[3] - m[1]),
+            Specification.ArmLength * Specification.ThrustCoefficient * (m[0] - m[2]),
             Specification.DragTorqueCoefficient * (m[0] - m[1] + m[2] - m[3])
             );
         var w = Assets.AngularVelocity.ToAngularVelocityVector(EulerAngles, AngularVelocity);

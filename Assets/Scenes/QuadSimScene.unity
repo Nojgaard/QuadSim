@@ -1203,7 +1203,8 @@ MonoBehaviour:
     EulerAngles: {x: 0, y: 0, z: 0}
     Velocity: {x: 0, y: 0, z: 0}
     AngularVelocity: {x: 0, y: 0, z: 0}
-  timeScale: 0.396
+  timeScale: 0.118
+  EnableController: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

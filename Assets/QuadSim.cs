@@ -58,7 +58,7 @@ public class QuadSim : MonoBehaviour
         // Draw motor torque vector
         var scaleRMP = 1 / quadcopter.Specification.MaxMotorRPM * 4; // note this has to be adjusted in the long run
         var up = bodyDirs[2];
-        Vector3[] rotorDirs = { bodyDirs[1], bodyDirs[0], -bodyDirs[1], -bodyDirs[0] };
+        Vector3[] rotorDirs = { bodyDirs[0], bodyDirs[1], -bodyDirs[0], -bodyDirs[1] };
         Gizmos.color = Color.black;
 
         for (int i = 0; i < quadcopter.Specification.NumRotors; i++)

@@ -8,8 +8,14 @@ public class PDController
 	private readonly Gyro _gyro;
     private Vector3 _eulerAngleIntegrated;
     
-	public float DerivativeScale = 5f;
-	public float ProportionalScale = 3.0f;
+	public float DerivativeScale = .1f;
+	public float ProportionalScale = 1f;
+
+	private struct ControlInput
+	{
+		public float Thrust;
+		public Vector3 EulerAngles;
+	}
 
 
     public PDController(Quadcopter quadcopter, Gyro gyro)
@@ -35,7 +41,7 @@ public class PDController
 		return error;
     }
 
-	private Vector4 AdjustInput(Vector3 angularVelocities)
+	private Vector4 AdjustInput2(Vector3 angularVelocities)
 	{
         var I = _quadcopter.Specification.MomentOfInertia;
 		var m = _quadcopter.Specification.Mass;
@@ -46,7 +52,10 @@ public class PDController
 
 		var errors = ComputerErrors(angularVelocities);
 
-        var thrustConstraint = (m * g.z) / (4 * k * Mathf.Cos(_eulerAngleIntegrated.x) * Mathf.Cos(_eulerAngleIntegrated.y));
+		var u1 = (m * g) / (Mathf.Cos(_eulerAngleIntegrated.x) * Mathf.Cos(_eulerAngleIntegrated.y));
+
+
+        var thrustConstraint = (m * g) / (4 * k * Mathf.Cos(_eulerAngleIntegrated.x) * Mathf.Cos(_eulerAngleIntegrated.y));
 
 
 		float const1 = errors.z * I.z/(4f * b);
@@ -69,7 +78,51 @@ public class PDController
         return gammas;
     }
 
-	public void Update(float dt)
+	private void ClampControlInputs(Vector4 inputs)
+	{
+        var m = _quadcopter.Specification.Mass;
+        var b = _quadcopter.Specification.DragTorqueCoefficient;
+        var k = _quadcopter.Specification.ThrustCoefficient;
+        var g = -_quadcopter.ForceGravity.z;
+        var L = _quadcopter.Specification.ArmLength;
+
+		var wmin = 0;
+		var wmax = _quadcopter.Specification.MaxMotorRPM * _quadcopter.Specification.MaxMotorRPM;
+
+
+        Mathf.Clamp(inputs.x, 4 * k * wmin, 4 * k * wmax);
+		Mathf.Clamp(inputs.y, -L * k * wmax, L * k * wmax);
+        Mathf.Clamp(inputs.z, -L * k * wmax, L * k * wmax);
+        Mathf.Clamp(inputs.w, -2 * b * wmax, 2 * b * wmax);
+    }
+
+    private Vector4 AdjustInput(Vector3 angularVelocities)
+    {
+        var m = _quadcopter.Specification.Mass;
+        var b = _quadcopter.Specification.DragTorqueCoefficient;
+        var k = _quadcopter.Specification.ThrustCoefficient;
+        var g = -_quadcopter.ForceGravity.z;
+        var L = _quadcopter.Specification.ArmLength;
+
+        var errors = ComputerErrors(angularVelocities);
+
+        var u1 = (m * g) / (Mathf.Cos(_eulerAngleIntegrated.x) * Mathf.Cos(_eulerAngleIntegrated.y));
+		var inputs = new Vector4(u1, errors.x, errors.y, errors.z);
+		ClampControlInputs(inputs);
+
+
+        var gammas = new Vector4(
+            inputs.x / (4 * k) - inputs.z / (2 * L * k) + inputs.w / (4 * b),
+            inputs.x / (4 * k) + inputs.y / (2 * L * k) - inputs.w / (4 * b),
+            inputs.x / (4 * k) + inputs.z / (2 * L * k) + inputs.w / (4 * b),
+            inputs.x / (4 * k) - inputs.y / (2 * L * k) - inputs.w / (4 * b)
+            );
+
+        
+        return gammas;
+    }
+
+    public void Update(float dt)
 	{
 		var angularVelocities = _gyro.AngularVelocity;
 
