@@ -2,6 +2,10 @@ using System;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// Contains the specification and current state of a simulated quadcopter.
+/// Moreover, the class is responsible for simulating the dynamics of the quadcopter.
+/// </summary>
 [Serializable]
 public class Quadcopter
 {
@@ -72,49 +76,81 @@ public class Quadcopter
 
     #region State
 
-    [Header("State")]
+    [Serializable]
+    public class StateData
+    {
+        /// <summary>
+        /// Angular velocity for each motor (radian/seconds)
+        /// </summary>
+        public Vector4 MotorAngularVelocity = new();
+
+        /// <summary>
+        /// Position in intertial frame
+        /// </summary>
+        public Vector3 Position = new();
+
+        /// <summary>
+        /// Roll, pitch, yaw in body frame
+        /// </summary>
+        public Vector3 EulerAngles = new();
+
+        /// <summary>
+        /// Velocity of quadcopter in bodyframe (m/s)
+        /// </summary>
+        public Vector3 Velocity = new();
+
+        /// <summary>
+        /// Angular velocity of quadcopter in 
+        /// </summary>
+        public Vector3 AngularVelocity = new();
+    }
+
+    /// <summary>
+    /// Current state of the quadcopter
+    /// </summary>
+    public StateData State = new();
+
+    /// <summary>
+    /// Initial state at simulation start
+    /// </summary>
+    public StateData InitialState = new();
+
+    public float InitialAngularVelocityNoiseFactor = 1f;
+
     /// <summary>
     /// Angular velocity for each motor (radian/seconds)
     /// </summary>
-    public Vector4 MotorAngularVelocity = new();
+    public Vector4 MotorAngularVelocity { get => State.MotorAngularVelocity; set => State.MotorAngularVelocity = value; }
 
     /// <summary>
     /// Position in intertial frame
     /// </summary>
-    public Vector3 Position = new();
+    public Vector3 Position { get => State.Position; set => State.Position = value; }
 
     /// <summary>
     /// Roll, pitch, yaw in body frame
     /// </summary>
-    public Vector3 EulerAngles = new();
+    public Vector3 EulerAngles { get => State.EulerAngles; set => State.EulerAngles = value; }
 
     /// <summary>
     /// Velocity of quadcopter in bodyframe (m/s)
     /// </summary>
-    public Vector3 Velocity = new();
+    public Vector3 Velocity { get => State.Velocity; set => State.Velocity = value; }
 
     /// <summary>
     /// Angular velocity of quadcopter in 
     /// </summary>
-    public Vector3 AngularVelocity = new();
+    public Vector3 AngularVelocity { get => State.AngularVelocity; set => State.AngularVelocity = value; }
 
     #endregion
 
-    public void SetInitialState(Vector3 position, Vector3 eulerAngles)
+    public void ResetState()
     {
-        Position = position;
-        EulerAngles = eulerAngles;
-        Velocity = Vector3.zero;
-        AngularVelocity = Vector3.zero;
-        for (int i = 0; i < Specification.NumRotors; i++) 
-        {
-            MotorAngularVelocity[i] = 330;
-        }
-        /*MotorAngularVelocity[0] = 250;
-        MotorAngularVelocity[1] = 410;
-        MotorAngularVelocity[2] = 250;
-        MotorAngularVelocity[3] = 410;*/
-        //AngularVelocity.z = 5;
+        Position = InitialState.Position;
+        EulerAngles = InitialState.EulerAngles;
+        Velocity = InitialState.Velocity;
+        AngularVelocity = InitialState.AngularVelocity;
+        MotorAngularVelocity = InitialState.MotorAngularVelocity; 
         DisturbAngularVelocity();
     }
 
@@ -163,11 +199,9 @@ public class Quadcopter
 
     private void DisturbAngularVelocity()
     {
-        float distrubance = 1;
-
         Vector3 velocityDisturbance = UnityEngine.Random.insideUnitSphere;
-        velocityDisturbance *= distrubance;
-        velocityDisturbance -= Vector3.one * distrubance;
+        velocityDisturbance *= InitialAngularVelocityNoiseFactor;
+        velocityDisturbance -= Vector3.one * InitialAngularVelocityNoiseFactor;
 
         AngularVelocity += velocityDisturbance;
     }

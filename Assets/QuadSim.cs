@@ -81,10 +81,10 @@ public class QuadSim : MonoBehaviour
         Event e = Event.current;
         if (Input.GetKeyUp(KeyCode.R))
         {
-            quadcopter.SetInitialState(new Vector3(0, 0, 10), Vector3.zero);
+            quadcopter.ResetState();
         }
 
-        if (e.isKey && e.keyCode == KeyCode.UpArrow)
+        /*if (e.isKey && e.keyCode == KeyCode.UpArrow)
         {
             for (int i = 0; i < 4; i++)
             {
@@ -97,7 +97,7 @@ public class QuadSim : MonoBehaviour
             {
                 quadcopter.MotorAngularVelocity[i] -= 100;
             }
-        }
+        }*/
     }
 
     // Start is called before the first frame update
@@ -105,7 +105,7 @@ public class QuadSim : MonoBehaviour
     {
         quadcopter.Position = _unityToInertial * transform.localPosition;
         quadcopter.EulerAngles = _unityToInertial * transform.eulerAngles;
-        quadcopter.SetInitialState(new Vector3(0, 0, 10), Vector3.zero);
+        quadcopter.ResetState();
 
         controller = new PDController(quadcopter, new Gyro(0f, quadcopter));
     }
