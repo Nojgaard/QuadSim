@@ -1198,14 +1198,27 @@ MonoBehaviour:
       MomentOfInertia: {x: 0.04989, y: 0.04989, z: 0.24057}
       DragCoefficients: {x: 0.164, y: 0.319, z: 0}
       DragTorqueCoefficient: 0.00000139
-    MotorAngularVelocity: {x: 0, y: 0, z: 0, w: 0}
-    Position: {x: 0, y: 0, z: 0}
-    EulerAngles: {x: 0, y: 0, z: 0}
-    Velocity: {x: 0, y: 0, z: 0}
-    AngularVelocity: {x: 0, y: 0, z: 0}
+      Gravity: 9.806
+    State:
+      MotorAngularVelocity: {x: 0, y: 0, z: 0, w: 0}
+      Position: {x: 0, y: 0, z: 0}
+      EulerAngles: {x: 0, y: 0, z: 0}
+      Velocity: {x: 0, y: 0, z: 0}
+      AngularVelocity: {x: 0, y: 0, z: 0}
+    InitialState:
+      MotorAngularVelocity: {x: 320.4991, y: 320.4991, z: 320.4991, w: 320.4991}
+      Position: {x: 0, y: 0, z: 15.12}
+      EulerAngles: {x: 0, y: 0, z: 0}
+      Velocity: {x: 0, y: 0, z: 0}
+      AngularVelocity: {x: 0, y: 3.78, z: 0}
+    InitialAngularVelocityNoiseFactor: 1
   controller:
     DerivativeScale: 0.8
     ProportionalScale: 1
+    PIDEulerAngles:
+      Target: {x: 0, y: 0, z: 0}
+      DerivativeScale: 0.8
+      ProportionalScale: 1
   timeScale: 0.52
   EnableController: 1
 --- !u!1660057539 &9223372036854775807
