@@ -31,6 +31,13 @@ public class PDController
         }
 
         public Vector3 GetErrors() => DerivativeScale * _errorDerivative + ProportionalScale * _errorProportional;
+
+        public void Reset()
+        {
+            _errorDerivative = new();
+            _errorProportional = new();
+            _errorIntegral = new();
+        }
     }
 
     public PIDError PIDEulerAngles = new();
@@ -102,5 +109,11 @@ public class PDController
             Mathf.Sqrt(gammas[1]),
             Mathf.Sqrt(gammas[2]),
             Mathf.Sqrt(gammas[3]));
+    }
+
+    public void Reset()
+    {
+        PIDEulerAngles.Reset();
+        _gyro.Reset();
     }
 }

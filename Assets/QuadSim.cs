@@ -82,6 +82,7 @@ public class QuadSim : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.R))
         {
             quadcopter.ResetState();
+            controller.Reset();
         }
 
         /*if (e.isKey && e.keyCode == KeyCode.UpArrow)

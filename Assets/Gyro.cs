@@ -33,6 +33,11 @@ namespace Assets
 			return _measuredEulerAngles;
         }
 
+		public void Reset()
+		{
+			_measuredEulerAngles = new();
+		}
+
 	}
 
 }
