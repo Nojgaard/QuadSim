@@ -51,6 +51,11 @@ public class Quadcopter
         /// Drag torque coefficients (kg-m^2/s^2)
         /// </summary>
         public float DragTorqueCoefficient = 1.39e-6f;
+
+        /// <summary>
+        /// Acceleration of gravity m/s^2
+        /// </summary>
+        public float Gravity = 9.806f;
     }
 
     public SpecificationData Specification;
@@ -65,7 +70,7 @@ public class Quadcopter
     /// <summary>
     /// Force of gravity in inertial frame (N)
     /// </summary>
-    public Vector3 ForceGravity => new(0, 0, -9.82f);
+    public Vector3 ForceGravity => new(0, 0, -Specification.Gravity);
 
     /// <summary>
     /// Force of drag in body frame (N)

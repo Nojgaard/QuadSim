@@ -48,7 +48,7 @@ public class PDController
 		var m = _quadcopter.Specification.Mass;
 		var b = _quadcopter.Specification.DragTorqueCoefficient;
 		var k = _quadcopter.Specification.ThrustCoefficient;
-		var g = -_quadcopter.ForceGravity.z;
+		var g = _quadcopter.Specification.Gravity;
 		var L = _quadcopter.Specification.ArmLength;
 
 		var errors = ComputerErrors(angularVelocities);
@@ -84,7 +84,7 @@ public class PDController
         var m = _quadcopter.Specification.Mass;
         var b = _quadcopter.Specification.DragTorqueCoefficient;
         var k = _quadcopter.Specification.ThrustCoefficient;
-        var g = -_quadcopter.ForceGravity.z;
+        var g = _quadcopter.Specification.Gravity;
         var L = _quadcopter.Specification.ArmLength;
 
 		var wmin = 0;
@@ -102,7 +102,7 @@ public class PDController
         var m = _quadcopter.Specification.Mass;
         var b = _quadcopter.Specification.DragTorqueCoefficient;
         var k = _quadcopter.Specification.ThrustCoefficient;
-        var g = -_quadcopter.ForceGravity.z;
+        var g = _quadcopter.Specification.Gravity;
         var L = _quadcopter.Specification.ArmLength;
 
         var errors = ComputerErrors(angularVelocities);
