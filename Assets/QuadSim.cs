@@ -117,11 +117,12 @@ public class QuadSim : MonoBehaviour
             return;
 
         var dt = Time.deltaTime * timeScale;
+        quadcopter.Update(dt);
+
         if (EnableController)
         {
             controller.Update(dt);
         }
-        quadcopter.Update(dt);
 
         if (float.IsNaN(quadcopter.EulerAngles.x))
             return;

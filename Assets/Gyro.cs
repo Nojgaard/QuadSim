@@ -10,10 +10,13 @@ namespace Assets
 
 		private readonly Quadcopter _quadcopter;
 
+		private Vector3 _measuredEulerAngles;
+
 		public Gyro(float sigma, Quadcopter quadcopter)
 		{
 			_sigma = sigma;
 			_quadcopter = quadcopter;
+			_measuredEulerAngles = new();
 		}
 
 		private Vector3 Polute(Vector3 eulerAngles)
@@ -22,6 +25,13 @@ namespace Assets
 		}
 
 		public Vector3 AngularVelocity => Polute(_quadcopter.AngularVelocity);
+
+		public Vector3 ReadEulerAngles(float dt)
+		{
+			var measuredAngularVelocity = Polute(_quadcopter.AngularVelocity);
+			_measuredEulerAngles += measuredAngularVelocity * dt;
+			return _measuredEulerAngles;
+        }
 
 	}
 
