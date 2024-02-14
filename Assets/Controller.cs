@@ -25,7 +25,7 @@ public class PDController
         public void Update(Vector3 measuredValue, float dt)
         {
             var lastErrorProportional = _errorProportional;
-            _errorProportional = measuredValue - Target;
+            _errorProportional = Target - measuredValue;
             _errorDerivative = (_errorProportional - lastErrorProportional) / dt;
             _errorIntegral += _errorProportional * dt;
         }
@@ -58,10 +58,10 @@ public class PDController
         var wmax = _quadcopter.Specification.MaxMotorRPM * _quadcopter.Specification.MaxMotorRPM;
 
 
-        Mathf.Clamp(inputs.x, 4 * k * wmin, 4 * k * wmax);
-        Mathf.Clamp(inputs.y, -L * k * wmax, L * k * wmax);
-        Mathf.Clamp(inputs.z, -L * k * wmax, L * k * wmax);
-        Mathf.Clamp(inputs.w, -2 * b * wmax, 2 * b * wmax);
+        Mathf.Clamp(inputs.x, 4 * k * wmin, 4 * k * wmax); // thrust
+        Mathf.Clamp(inputs.y, -L * k * wmax, L * k * wmax); // roll torque
+        Mathf.Clamp(inputs.z, -L * k * wmax, L * k * wmax); // pitch torque
+        Mathf.Clamp(inputs.w, -2 * b * wmax, 2 * b * wmax); // yaw torque
     }
 
     private Vector4 ComputeDesiredMotorSpeeds(Vector3 measuredEulerAngles)
@@ -80,10 +80,10 @@ public class PDController
 
 
         var gammas = new Vector4(
-            inputs.x / (4 * k) - inputs.z / (2 * L * k) - inputs.w / (4 * b),
-            inputs.x / (4 * k) + inputs.y / (2 * L * k) + inputs.w / (4 * b),
-            inputs.x / (4 * k) + inputs.z / (2 * L * k) - inputs.w / (4 * b),
-            inputs.x / (4 * k) - inputs.y / (2 * L * k) + inputs.w / (4 * b)
+            inputs.x / (4 * k) + inputs.z / (2 * L * k) + inputs.w / (4 * b),
+            inputs.x / (4 * k) - inputs.y / (2 * L * k) - inputs.w / (4 * b),
+            inputs.x / (4 * k) - inputs.z / (2 * L * k) + inputs.w / (4 * b),
+            inputs.x / (4 * k) + inputs.y / (2 * L * k) - inputs.w / (4 * b)
             );
 
         // The clamps are required, because of the thrust from the yaw control (u4)
