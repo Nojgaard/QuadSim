@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Assets
 {
-	public class Gyro
+	public class MPU
 	{
 		private readonly float _sigma;
 
@@ -12,7 +12,9 @@ namespace Assets
 
 		private Vector3 _measuredEulerAngles;
 
-		public Gyro(float sigma, Quadcopter quadcopter)
+		private Vector3 _measuredVelocities;
+
+		public MPU(float sigma, Quadcopter quadcopter)
 		{
 			_sigma = sigma;
 			_quadcopter = quadcopter;
@@ -32,6 +34,14 @@ namespace Assets
 			_measuredEulerAngles += measuredAngularVelocity * dt;
 			return _measuredEulerAngles;
         }
+
+		public Vector3 ReadVelocities(float dt)
+		{
+			var measuresVelocities = Polute(_quadcopter.Velocity);
+			_measuredVelocities = measuresVelocities;
+
+			return _measuredVelocities;
+		}
 
 		public void Reset()
 		{

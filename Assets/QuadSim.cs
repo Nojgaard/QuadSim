@@ -108,7 +108,7 @@ public class QuadSim : MonoBehaviour
         quadcopter.EulerAngles = _unityToInertial * transform.eulerAngles;
         quadcopter.ResetState();
 
-        controller = new PDController(quadcopter, new Gyro(0f, quadcopter));
+        controller = new PDController(quadcopter, new MPU(0f, quadcopter));
     }
 
     // Update is called once per frame
