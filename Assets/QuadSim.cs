@@ -6,7 +6,12 @@ public class QuadSim : MonoBehaviour
 {
     public Quadcopter quadcopter = new();
 
-    public float[] Speeds = new float[4];
+    public PDController controller;
+
+    [Range(0, 1)]
+    public float timeScale = .7f;
+
+    public bool EnableController = true;
 
 
     public void OnEnable()
@@ -29,10 +34,10 @@ public class QuadSim : MonoBehaviour
             motors[i].transform.localScale = motorSize;
         }
 
-        motors[0].transform.localPosition = (Vector3.right * quadcopter.ArmLength);
-        motors[1].transform.localPosition = (Vector3.left * quadcopter.ArmLength);
-        motors[2].transform.localPosition = (Vector3.forward * quadcopter.ArmLength);
-        motors[3].transform.localPosition = (Vector3.back * quadcopter.ArmLength);
+        motors[0].transform.localPosition = (Vector3.right * quadcopter.Specification.ArmLength);
+        motors[1].transform.localPosition = (Vector3.left * quadcopter.Specification.ArmLength);
+        motors[2].transform.localPosition = (Vector3.forward * quadcopter.Specification.ArmLength);
+        motors[3].transform.localPosition = (Vector3.back * quadcopter.Specification.ArmLength);
 
     }
 
@@ -53,17 +58,17 @@ public class QuadSim : MonoBehaviour
         }
 
         // Draw motor torque vector
-        var scaleRMP = 1 / quadcopter.MaxMotorRPM * 4; // note this has to be adjusted in the long run
+        var scaleRMP = 1 / quadcopter.Specification.MaxMotorRPM * 4; // note this has to be adjusted in the long run
         var up = bodyDirs[2];
-        Vector3[] rotorDirs = { bodyDirs[1], bodyDirs[0], -bodyDirs[1], -bodyDirs[0] };
+        Vector3[] rotorDirs = { bodyDirs[0], bodyDirs[1], -bodyDirs[0], -bodyDirs[1] };
         Gizmos.color = Color.black;
 
-        for (int i = 0; i < quadcopter.NumRotors; i++)
+        for (int i = 0; i < quadcopter.Specification.NumRotors; i++)
         {
-            Vector3 relativeTorque = scaleRMP * Speeds[i] * up;
-            var originRotor = transform.position + rotorDirs[i] * quadcopter.ArmLength;
+            Vector3 relativeTorque = scaleRMP * quadcopter.MotorAngularVelocity[i] * up;
+            var originRotor = transform.position + rotorDirs[i] * quadcopter.Specification.ArmLength;
             Gizmos.DrawLine(originRotor, originRotor + relativeTorque);
-            ConeMesh.DrawCone(originRotor + relativeTorque, up, 0.5f * Speeds[i] * scaleRMP);
+            ConeMesh.DrawCone(originRotor + relativeTorque, up, 0.5f * quadcopter.MotorAngularVelocity[i] * scaleRMP);
         }
     }
 
@@ -76,35 +81,34 @@ public class QuadSim : MonoBehaviour
         Event e = Event.current;
         if (Input.GetKeyUp(KeyCode.R))
         {
-            quadcopter.SetInitialState(new Vector3(0, 0, 10), Vector3.zero);
+            quadcopter.ResetState();
+            controller.Reset();
         }
 
-        if (e.isKey && e.keyCode == KeyCode.UpArrow)
+        /*if (e.isKey && e.keyCode == KeyCode.UpArrow)
         {
-            for (int i = 0; i < Speeds.Length; i++)
+            for (int i = 0; i < 4; i++)
             {
-                Speeds[i] += 100;
+                quadcopter.MotorAngularVelocity[i] += 100;
             }
         }
         if (e.isKey && e.keyCode == KeyCode.DownArrow)
         {
-            for (int i = 0; i < Speeds.Length; i++)
+            for (int i = 0; i < 4; i++)
             {
-                Speeds[i] -= 100;
+                quadcopter.MotorAngularVelocity[i] -= 100;
             }
-        }
+        }*/
     }
-
-    private PDController _controller;
 
     // Start is called before the first frame update
     void Start()
     {
         quadcopter.Position = _unityToInertial * transform.localPosition;
         quadcopter.EulerAngles = _unityToInertial * transform.eulerAngles;
-        quadcopter.SetInitialState(new Vector3(0, 0, 10), Vector3.zero);
+        quadcopter.ResetState();
 
-        _controller = new PDController(quadcopter, new Gyro(0f, quadcopter));
+        controller = new PDController(quadcopter, new MPU(0f, quadcopter));
     }
 
     // Update is called once per frame
@@ -113,11 +117,13 @@ public class QuadSim : MonoBehaviour
         if (float.IsNaN(quadcopter.EulerAngles.x))
             return;
 
-        var dt = Time.deltaTime;
-        quadcopter.MotorAngularVelocity = Speeds;
-        _controller.Update(dt * .7f);
-        Speeds = quadcopter.MotorAngularVelocity;
-        quadcopter.Update(dt*.7f);
+        var dt = Time.deltaTime * timeScale;
+        quadcopter.Update(dt);
+
+        if (EnableController)
+        {
+            controller.Update(dt);
+        }
 
         if (float.IsNaN(quadcopter.EulerAngles.x))
             return;
