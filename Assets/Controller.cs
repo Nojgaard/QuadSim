@@ -6,7 +6,7 @@ using UnityEngine;
 public class PDController
 {
     private readonly Quadcopter _quadcopter;
-    private readonly Gyro _gyro;
+    private readonly MPU _gyro;
 
     public float DerivativeScale = .8f;
     public float ProportionalScale = 1f;
@@ -42,7 +42,7 @@ public class PDController
 
     public PIDError PIDEulerAngles = new();
 
-    public PDController(Quadcopter quadcopter, Gyro gyro)
+    public PDController(Quadcopter quadcopter, MPU gyro)
     {
         _quadcopter = quadcopter;
         _gyro = gyro;;
