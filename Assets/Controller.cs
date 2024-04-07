@@ -6,7 +6,7 @@ using UnityEngine;
 public class PDController
 {
     private readonly Quadcopter _quadcopter;
-    private readonly MPU _gyro;
+    private readonly MPU _mpu;
 
     public float DerivativeScale = .8f;
     public float ProportionalScale = 1f;
@@ -17,6 +17,9 @@ public class PDController
         public Vector3 Target = new();
         public float DerivativeScale = .8f;
         public float ProportionalScale = 1f;
+        public float IntegralScale = 0.4f;
+
+        public float IntegralTrigger = 0.1f;
 
         private Vector3 _errorDerivative = new();
         private Vector3 _errorProportional = new();
@@ -27,10 +30,16 @@ public class PDController
             var lastErrorProportional = _errorProportional;
             _errorProportional = Target - measuredValue;
             _errorDerivative = (_errorProportional - lastErrorProportional) / dt;
-            _errorIntegral += _errorProportional * dt;
+
+            if (_errorProportional.sqrMagnitude <= IntegralTrigger)
+                _errorIntegral += _errorProportional * dt;
+            else
+                _errorIntegral = Vector3.zero;
+
         }
 
-        public Vector3 GetErrors() => DerivativeScale * _errorDerivative + ProportionalScale * _errorProportional;
+        public Vector3 GetErrors() => DerivativeScale * _errorDerivative + ProportionalScale * _errorProportional 
+            + IntegralScale * ((_errorProportional.sqrMagnitude <= IntegralTrigger) ? _errorIntegral : Vector3.zero);
 
         public void Reset()
         {
@@ -42,10 +51,12 @@ public class PDController
 
     public PIDError PIDEulerAngles = new();
 
-    public PDController(Quadcopter quadcopter, MPU gyro)
+    public PIDError PIDVelocities = new();
+
+    public PDController(Quadcopter quadcopter, MPU mpu)
     {
         _quadcopter = quadcopter;
-        _gyro = gyro;;
+        _mpu = mpu;;
     }
 
     private void ClampControlInputs(Vector4 inputs)
@@ -73,8 +84,9 @@ public class PDController
         var L = _quadcopter.Specification.ArmLength;
 
         var errors = PIDEulerAngles.GetErrors();
+        var velocityErrors = PIDVelocities.GetErrors();
 
-        var u1 = (m * g) / (Mathf.Cos(measuredEulerAngles.x) * Mathf.Cos(measuredEulerAngles.y));
+        var u1 = (m * g) / (Mathf.Cos(measuredEulerAngles.x) * Mathf.Cos(measuredEulerAngles.y)) + velocityErrors.z;
         var inputs = new Vector4(u1, errors.x, errors.y, errors.z);
         ClampControlInputs(inputs);
 
@@ -99,8 +111,10 @@ public class PDController
 
     public void Update(float dt)
     {
-        var measuredEulerAngles = _gyro.ReadEulerAngles(dt);
+        var measuredEulerAngles = _mpu.ReadEulerAngles(dt);
+        var measuredVelocities = _mpu.ReadVelocities(dt);
         PIDEulerAngles.Update(measuredEulerAngles, dt);
+        PIDVelocities.Update(measuredVelocities, dt);
 
         var gammas = ComputeDesiredMotorSpeeds(measuredEulerAngles);
 
@@ -114,6 +128,6 @@ public class PDController
     public void Reset()
     {
         PIDEulerAngles.Reset();
-        _gyro.Reset();
+        _mpu.Reset();
     }
 }
